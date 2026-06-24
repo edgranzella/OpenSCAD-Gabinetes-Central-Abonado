@@ -1,0 +1,18 @@
+﻿# Archivos de exportación pesados (Es mejor generarlos localmente)
+*.stl
+*.obj
+*.3mf
+*.off
+*.dxf
+*.svg
+
+# Archivos de renderizado e imágenes temporales
+*.png
+*.jpg
+*.jpeg
+*.gif
+
+# Archivos de respaldo automáticos de editores
+*~
+*.bak
+.history/
