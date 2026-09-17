@@ -15,10 +15,16 @@
 //      cubierta, tapa_V1.scad).
 //   b) Se agregaron los parantes/torretas de montaje (postes con
 //      agujero autorroscante) copiados del modulo mounting_boss() de
-//      gabinete_ModemEYSE4G_base_0A.scad, con las coordenadas
-//      DEFINITIVAS verificadas contra Modulo_SIMA7670SA.kicad_pcb
-//      (las mismas ya validadas en base_0B.scad: board_x=92.0mm,
-//      mirror_x=false, H1-H4 con los valores reales de 2026-09-16).
+//      gabinete_ModemEYSE4G_base_0A.scad.
+//
+// CAMBIO DE FUENTE DE DATOS (2026-09-17, decision explicita de
+// Damian): este archivo usa la revision "Gerber Files V1" del PCB
+// (GPRS_SIM_A7670SA_kicad/Gerber Files V1/Modulo_SIMA7670SA.kicad_pcb,
+// placa 90.30 x 85.00mm), NO la revision "definitiva" de 92.0mm usada
+// anteriormente. Las coordenadas H1-H4 de abajo fueron verificadas
+// dato por dato contra ESE archivo (origen = esquina del gr_rect de
+// Edge.Cuts, 114.86,60.66) y coinciden exacto con la tabla que aporto
+// Damian. board_x paso de 92.0 a 90.30mm.
 //   c) Las orejitas de sujecion tapa-base (agujero pasante simple,
 //      sin roscar) se mantienen TAL CUAL estaban en tapa_7.scad -
 //      siguen siendo la parte "delgada" del par de piezas, y el
@@ -27,8 +33,8 @@
 // ============================================================
 
 // ---------- PARAMETROS DE LA PLACA ----------
-// Identicos a base_0B.scad (PCB definitivo).
-board_x = 92.0;         // ancho de la placa (mm)
+// Fuente: Gerber Files V1 (ver nota arriba). board = 90.30 x 85.00mm.
+board_x = 90.3;         // ancho de la placa (mm) - ACTUALIZADO 2026-09-17 (era 92.0)
 board_y = 85.0;         // alto de la placa (mm)
 
 // ---------- PARAMETROS DEL GABINETE ----------
@@ -53,18 +59,18 @@ mirror_x = false;
 function mx(x) = mirror_x ? (board_x - x) : x;
 
 // ---------- MOUNTING HOLES (torretas de sujecion del PCB) ----------
-// Copiado de base_0B.scad: coordenadas crudas de KiCad (relativas al
-// origen 0,0 de la placa), verificadas contra Modulo_SIMA7670SA.kicad_pcb
-// definitivo el 2026-09-16. H1: esquina inferior izquierda, H2:
-// superior izquierda, H3: superior derecha, H4: inferior derecha.
-mount_hole_H1_x = 4.0;
-mount_hole_H1_y = 81.0;
-mount_hole_H2_x = 4.1;
-mount_hole_H2_y = 4.1;
-mount_hole_H3_x = 87.6;
-mount_hole_H3_y = 4.3;
-mount_hole_H4_x = 87.7;
-mount_hole_H4_y = 80.6;
+// Coordenadas crudas de KiCad (relativas al origen 0,0 de la placa),
+// verificadas dato por dato contra Gerber Files V1/Modulo_SIMA7670SA.kicad_pcb
+// el 2026-09-17. H1: esquina inferior izquierda, H2: superior
+// izquierda, H3: superior derecha, H4: inferior derecha.
+mount_hole_H1_x = 4.000;
+mount_hole_H1_y = 81.000;
+mount_hole_H2_x = 4.100;
+mount_hole_H2_y = 4.100;
+mount_hole_H3_x = 86.200;  // ACTUALIZADO 2026-09-17 (era 87.6, valor del PCB definitivo)
+mount_hole_H3_y = 4.100;   // ACTUALIZADO 2026-09-17 (era 4.3)
+mount_hole_H4_x = 86.300;  // ACTUALIZADO 2026-09-17 (era 87.7)
+mount_hole_H4_y = 80.900;  // ACTUALIZADO 2026-09-17 (era 80.6)
 
 mount_holes_kicad = [
     [mount_hole_H1_x, mount_hole_H1_y],   // H1
