@@ -221,8 +221,8 @@ conn_J2_top_z = pcb_top_z_from_rim + conn_J2_h; // = 14.6mm
 // ACTUALIZADO 2026-09-18 (coordenadas reales y definitivas dadas por
 // Damian): la ranura abarca exactamente Y=35mm a Y=42mm sobre la
 // pared X=0mm (reemplaza el ancho generico ~10mm que tenia antes).
-conn_usbc_slot_y1 = 35;
-conn_usbc_slot_y2 = 42;
+conn_usbc_slot_y1 = 37;
+conn_usbc_slot_y2 = 53;
 conn_usbc_w = conn_usbc_slot_y2 - conn_usbc_slot_y1;                 // = 7mm
 conn_usbc_y = (conn_usbc_slot_y1 + conn_usbc_slot_y2) / 2;           // = 38.5mm
 //
