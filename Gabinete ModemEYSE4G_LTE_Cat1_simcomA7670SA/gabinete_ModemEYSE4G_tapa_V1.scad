@@ -37,8 +37,8 @@
 // la interpretacion de ingenieria aplicada - revisar antes de imprimir.
 //
 // Cambios respecto a base_0A.scad:
-//   a) box_ext_height aumentado para garantizar >= 25mm de altura
-//      libre interna para el PCB + componentes (ver calculo abajo).
+//   a) box_ext_height ajustado (ver historial mas abajo, ultimo valor:
+//      25mm de altura EXTERIOR total, instruccion final de Damian).
 //   b) Se agregaron los calados de LED D2/D3 (ahora se ven a traves
 //      del techo de esta pieza).
 //   c) y d) Se recalcularon las ventanas de conectores. J1, J5, J2 y
@@ -124,15 +124,22 @@ floor_thickness = 3.0;   // espesor del TECHO de esta pieza (misma constante
 clearance_xy = 1.5;      // holgura alrededor de la placa (mm)
 floor_to_board = 3;      // igual que en base_V1.scad (altura de las torretas)
 
-// AJUSTE v1 (punto a del encabezado): altura interior libre minima
-// requerida por Damian = 25mm, medida desde la superficie superior
-// de base_V1.scad (donde apoya el PCB elevado por las torretas) hasta
-// el techo de esta cubierta. Esa altura libre = box_ext_height -
-// floor_thickness (el techo "se come" floor_thickness mm de la altura
-// total). Para llegar a 25mm exactos: box_ext_height = 25 + 3 = 28mm.
-box_ext_height = 28.0;   // altura EXTERIOR de la cubierta (antes 20.0 en base_0A)
+// AJUSTE 2026-09-18 (instruccion final de Damian): la ALTURA TOTAL
+// EXTERIOR de esta pieza debe ser exactamente 25mm (antes el
+// requisito era que la altura LIBRE interna llegara a 25mm, lo que
+// daba una altura exterior de 28mm - ese criterio queda reemplazado
+// por este). Con floor_thickness=3mm de techo, la altura libre
+// interna resultante ahora es 25-3 = 22mm (antes 25mm).
+box_ext_height = 25.0;   // altura EXTERIOR de la cubierta (antes 28.0, y 20.0 en base_0A)
 // Verificacion: altura libre resultante = box_ext_height - floor_thickness
-altura_libre_verificacion = box_ext_height - floor_thickness; // = 25.0mm >= 25mm requerido
+altura_libre_verificacion = box_ext_height - floor_thickness; // = 22.0mm
+
+// Verificacion de que ninguna ranura/ventana choca con el techo (que
+// ahora arranca en Z=22mm en vez de Z=25mm): la ranura/ventana mas
+// alta es USB-C (top_z=17.11mm) y J4 (tope=conn_J4_sma_z+slot_h/2=
+// 17.6mm) - ambas quedan con margen (22-17.6=4.4mm minimo) antes de
+// tocar el techo. J1J5 (16.5mm) y J2 (14.6mm) tienen aun mas margen.
+// No hace falta cambiar ningun calado.
 
 // Referencia de altura "piso del PCB" MEDIDA DESDE EL BORDE (Z=0) de
 // esta pieza - reemplaza al "pcb_top_z" de base_0A (que se medía desde
@@ -174,47 +181,50 @@ led_hole_d = 6.0; // LED 5mm + 0.5mm de holgura por lado (igual que tapa_0B.scad
 // "U invertida" abierta hasta Z=0 para J1/J5/J2/USB-C, ventana
 // cerrada tradicional para J4.
 
-// --- J1 (borne de alimentacion, Phoenix PT-1,5/2-5,0-H, pared Y=85 = "lado izquierdo") ---
-// CORREGIDO 2026-09-17 (instruccion final de Damian): pasa de la
-// pared Y=0 a la pared Y=85. La coordenada X no cambia (sigue siendo
-// la posicion real a lo largo de la pared).
-conn_J1_x_kicad = 23.726;             // ACTUALIZADO 2026-09-17: Gerber Files V1 (era 28.7, PCB definitivo)
-conn_J1_w = 10 + 2*0.5;               // = 11mm (cuerpo real 10mm + 0.5mm/lado)
-// Alto real sin pin de soldadura (datasheet Phoenix) = 11.4mm. En una
-// ranura abierta hacia abajo, la holgura de 0.5mm solo hace falta en
-// el borde SUPERIOR (el inferior queda abierto sin limite).
+// --- J1 + J5 (borne de alimentacion + jack DC barrel, UNA SOLA ranura
+// continua, pared Y=85 = "lado izquierdo") ---
+// ACTUALIZADO 2026-09-18 (coordenadas reales y definitivas dadas por
+// Damian): la ranura abarca exactamente X=9mm a X=32mm sobre la pared
+// Y=85mm (reemplaza los dos rectangulos separados que tenia antes,
+// uno por conector - ahora J1 y J5 comparten una unica ranura "U
+// invertida" continua).
+conn_J1J5_slot_x1 = 9;
+conn_J1J5_slot_x2 = 32;
+conn_J1J5_slot_w = conn_J1J5_slot_x2 - conn_J1J5_slot_x1;                 // = 23mm
+conn_J1J5_slot_center_x = (conn_J1J5_slot_x1 + conn_J1J5_slot_x2) / 2;    // = 20.5mm
+// Altura Z: se mantienen los calculos previos (sin cambios) para cada
+// conector - J1 = pcb_top_z_from_rim + 11.4(cuerpo real, sin pin) +
+// 0.5(holgura) = 16.5mm; J5 = pcb_top_z_from_rim + 11(cuerpo real) +
+// 0.5(holgura) = 16.1mm. Como ahora es UNA sola ranura para los dos,
+// se usa la mas alta de las dos (J1, 16.5mm) para que ambos conectores
+// queden cubiertos.
 conn_J1_top_z = pcb_top_z_from_rim + 11.4 + 0.5; // = 16.5mm
-
-// --- J5 (jack DC barrel, Same Sky PJ-002A, pared Y=85 = "lado izquierdo") ---
-// CORREGIDO 2026-09-17: pasa de la pared Y=0 a la pared Y=85.
-conn_J5_x_kicad = 14.911;             // verificado contra Gerber Files V1 (identico a la rev. anterior)
-conn_J5_w = 9 + 2*0.5;                // = 10mm (cuerpo real 9mm + 0.5mm/lado)
-conn_J5_top_z = pcb_top_z_from_rim + 11 + 0.5;   // = 16.1mm (cuerpo real 11mm alto)
+conn_J5_top_z = pcb_top_z_from_rim + 11 + 0.5;   // = 16.1mm
+conn_J1J5_slot_top_z = max(conn_J1_top_z, conn_J5_top_z); // = 16.5mm
 
 // --- J2 (DB9 hembra 90 grados, pared Y=0 = "lado derecho") ---
-// CORREGIDO 2026-09-17: pasa de la pared Y=85 a la pared Y=0.
-conn_J2_x_kicad = 30.960;             // verificado contra Gerber Files V1 (identico a la rev. anterior)
-conn_J2_w = 30.81 + 2*0.5;            // = 31.81mm (CORREGIDO v0B: brida con jackscrews)
+// ACTUALIZADO 2026-09-18 (coordenadas reales y definitivas dadas por
+// Damian): la ranura abarca exactamente X=9mm a X=42mm sobre la pared
+// Y=0mm (reemplaza el ancho calculado por holgura que tenia antes).
+conn_J2_slot_x1 = 9;
+conn_J2_slot_x2 = 42;
+conn_J2_w = conn_J2_slot_x2 - conn_J2_slot_x1;              // = 33mm
+conn_J2_x_center = (conn_J2_slot_x1 + conn_J2_slot_x2) / 2; // = 25.5mm
 // NOTA: el alto de calado J2 (10mm) NO viene de una holgura de 0.5mm
 // sobre un dato de datasheet limpio - es el valor heredado (carcasa
 // real ~8.36mm + margen ya generoso). Se usa tal cual como techo de
-// la ranura abierta.
+// la ranura abierta - SIN CAMBIOS (altura Z ya calculada, se mantiene).
 conn_J2_h = 10;
 conn_J2_top_z = pcb_top_z_from_rim + conn_J2_h; // = 14.6mm
 
 // --- USB-C de U5 (Black Pill), pared X=0 ("lado frontal", junto a los LEDs) ---
-// CORRECCION DE VOCABULARIO (2026-09-17): esta pared (X=0) es "lado
-// frontal" segun la nomenclatura confirmada contra PCB V1 top.png, no
-// "lado izquierdo" como decia el comentario anterior (ese nombre
-// correspondia a la pared Y=0, donde estan J1/J5 - ver encabezado).
-// Sin cambio de posicion: sigue en X=0, junto a los LEDs.
-conn_usbc_y = 44.1;
-// DIMENSIONES: ancho aun SIN VERIFICAR contra un datasheet real del
-// conector USB-C (el PDF "MiniF4x1Cx_V31 Board Shape" solo trae el
-// contorno de la placa Black Pill, no las cotas del propio conector).
-// Valor generico de referencia para un receptaculo USB-C tipico
-// (~9mm ancho) + 0.5mm de holgura.
-conn_usbc_w = 9 + 2*0.5;              // = 10mm (SIN VERIFICAR)
+// ACTUALIZADO 2026-09-18 (coordenadas reales y definitivas dadas por
+// Damian): la ranura abarca exactamente Y=35mm a Y=42mm sobre la
+// pared X=0mm (reemplaza el ancho generico ~10mm que tenia antes).
+conn_usbc_slot_y1 = 35;
+conn_usbc_slot_y2 = 42;
+conn_usbc_w = conn_usbc_slot_y2 - conn_usbc_slot_y1;                 // = 7mm
+conn_usbc_y = (conn_usbc_slot_y1 + conn_usbc_slot_y2) / 2;           // = 38.5mm
 //
 // ALTURA CORREGIDA (2026-09-17, "va mas arriba" - Damian): el valor
 // anterior (8.6mm) no tenia en cuenta que la Black Pill (U5) va
@@ -323,17 +333,14 @@ module tapa_v1() {
             cylinder(h = floor_thickness + 2, d = led_hole_d, $fn = 32);
 
         // ---- Ranuras "U invertida" (abiertas hasta Z=0) ----
-        // Pared Y=85 ("lado izquierdo"): J1 y J5 (CORREGIDO 2026-09-17:
-        // pasaron de la pared Y=0)
-        translate([mx(conn_J1_x_kicad) + offset_x - conn_J1_w/2, outer_y - wall - 1, 0])
-            cube([conn_J1_w, wall + 2, conn_J1_top_z]);
+        // Pared Y=85 ("lado izquierdo"): J1+J5, UNA sola ranura continua
+        // X=9 a X=32mm (coordenadas reales y definitivas, 2026-09-18).
+        translate([mx(conn_J1J5_slot_center_x) + offset_x - conn_J1J5_slot_w/2, outer_y - wall - 1, 0])
+            cube([conn_J1J5_slot_w, wall + 2, conn_J1J5_slot_top_z]);
 
-        translate([mx(conn_J5_x_kicad) + offset_x - conn_J5_w/2, outer_y - wall - 1, 0])
-            cube([conn_J5_w, wall + 2, conn_J5_top_z]);
-
-        // Pared Y=0 ("lado derecho"): J2 (ranura abierta) (CORREGIDO
-        // 2026-09-17: paso de la pared Y=85)
-        translate([mx(conn_J2_x_kicad) + offset_x - conn_J2_w/2, -1, 0])
+        // Pared Y=0 ("lado derecho"): J2, ranura X=9 a X=42mm
+        // (coordenadas reales y definitivas, 2026-09-18)
+        translate([mx(conn_J2_x_center) + offset_x - conn_J2_w/2, -1, 0])
             cube([conn_J2_w, wall + 2, conn_J2_top_z]);
 
         // Pared X=0 ("lado frontal", junto a los LEDs): USB-C
