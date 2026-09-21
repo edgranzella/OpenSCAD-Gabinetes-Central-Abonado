@@ -32,45 +32,32 @@
 //      arriba en el poste alto del archivo tapa_V1.scad.
 // ============================================================
 
+// ============================================================
+// Gabinete - ModemEYSE4G_LTE_Cat1_simA7670SA - BASE V1 RECORTADA
+// (AJUSTE: Reducción de bordes y reubicación automática de orejitas)
+// ============================================================
+
 // ---------- PARAMETROS DE LA PLACA ----------
-// Fuente: Gerber Files V1 (ver nota arriba). board = 90.30 x 85.00mm.
-board_x = 90.3;         // ancho de la placa (mm) - ACTUALIZADO 2026-09-17 (era 92.0)
+board_x = 90.3;         // ancho de la placa (mm) - Gerber Files V1
 board_y = 85.0;         // alto de la placa (mm)
 
 // ---------- PARAMETROS DEL GABINETE ----------
-wall = 3.0;             // espesor de pared, hacia afuera (mm) - solo se usa aca
-                        // para calcular outer_x/outer_y (este plato no tiene
-                        // paredes propias, son parte de tapa_V1.scad)
-floor_thickness = 3.0;  // espesor de este plato (antes "lid_thickness" en tapa_7)
-clearance_xy = 1.5;     // holgura alrededor de la placa (mm)
-
-// La placa se apoya con la cara de componentes hacia ARRIBA (+Z), sujeta
-// por tornillos insertados desde arriba en H1-H4 hacia parantes que
-// suben desde este plato. La cara inferior de la placa NO tiene
-// componentes, asi que este hueco es solo la altura estructural del
-// parante, no un espacio para alojar partes.
-floor_to_board = 3;
+floor_thickness = 3.0;  // espesor de este plato (mm)
+floor_to_board = 3;     // altura estructural del parante (mm)
 
 // ---------- ESPEJADO EN X ----------
-// Igual que en base_0B.scad: la placa va con los componentes hacia
-// arriba, en su orientacion natural, coincidiendo con la vista
-// superior estandar de KiCad - no corresponde espejar.
 mirror_x = false;
 function mx(x) = mirror_x ? (board_x - x) : x;
 
 // ---------- MOUNTING HOLES (torretas de sujecion del PCB) ----------
-// Coordenadas crudas de KiCad (relativas al origen 0,0 de la placa),
-// verificadas dato por dato contra Gerber Files V1/Modulo_SIMA7670SA.kicad_pcb
-// el 2026-09-17. H1: esquina inferior izquierda, H2: superior
-// izquierda, H3: superior derecha, H4: inferior derecha.
 mount_hole_H1_x = 4.000;
 mount_hole_H1_y = 81.000;
 mount_hole_H2_x = 4.100;
 mount_hole_H2_y = 4.100;
-mount_hole_H3_x = 86.200;  // ACTUALIZADO 2026-09-17 (era 87.6, valor del PCB definitivo)
-mount_hole_H3_y = 4.100;   // ACTUALIZADO 2026-09-17 (era 4.3)
-mount_hole_H4_x = 86.300;  // ACTUALIZADO 2026-09-17 (era 87.7)
-mount_hole_H4_y = 80.900;  // ACTUALIZADO 2026-09-17 (era 80.6)
+mount_hole_H3_x = 86.200;  
+mount_hole_H3_y = 4.100;   
+mount_hole_H4_x = 86.300;  
+mount_hole_H4_y = 80.900;  
 
 mount_holes_kicad = [
     [mount_hole_H1_x, mount_hole_H1_y],   // H1
@@ -78,39 +65,42 @@ mount_holes_kicad = [
     [mount_hole_H3_x, mount_hole_H3_y],   // H3
     [mount_hole_H4_x, mount_hole_H4_y]    // H4
 ];
-mount_holes = [ for (p = mount_holes_kicad) [mx(p[0]), p[1]] ];
-mount_hole_d = 4.0;     // diametro del taladro NPTH del PCB (referencia, no impulsa geometria)
+
+// Mantenemos la inversión del eje Y corregida anteriormente
+mount_holes = [ for (p = mount_holes_kicad) [mx(p[0]), board_y - p[1]] ];
+
 standoff_od = 8.0;      // diametro externo del standoff/boss
-screw_d = 3.0;          // diametro de tornillo autorroscante para sujetar el PCB
+screw_d = 3.0;          // diametro de tornillo autorroscante para el PCB
 
 // ============================================================
 // MODULOS
 // ============================================================
 
-// Torreta de montaje del PCB: copiado tal cual de base_0A/0B.scad.
+// Torreta de montaje del PCB
 module mounting_boss(h) {
     difference() {
         cylinder(h = h, d = standoff_od, $fn = 32);
-        cylinder(h = h + 1, d = screw_d, $fn = 32);
+        translate([0, 0, -0.5])
+            cylinder(h = h + 1, d = screw_d, $fn = 32);
     }
 }
 
-// Dimensiones exteriores totales del plato (deben coincidir con las
-// de gabinete_ModemEYSE4G_tapa_V1.scad para que ensamble bien)
-outer_x = board_x + 2 * (wall + clearance_xy);
-outer_y = board_y + 2 * (wall + clearance_xy);
-offset_x = wall + clearance_xy; // offset del (0,0) de la placa dentro del plato
-offset_y = wall + clearance_xy;
+// ---------- NUEVAS DIMENSIONES RECORTADAS ----------
+// Se elimina el exceso periférico de pared (wall) y holguras viejas.
+// Se ajusta a un margen mínimo al ras de la placa.
+clearance_corte = 0.5; 
 
-// ---------- OREJITAS DE SUJECION TAPA-BASE ----------
-// Identicas a tapa_7.scad: solo agujero pasante (sin roscar). El
-// tornillo se inserta desde ABAJO de este plato, atraviesa esta
-// orejita libremente, y rosca hacia arriba en el poste alto y macizo
-// del archivo tapa_V1.scad (ahi si tiene agujero piloto autorroscante).
-ear_clearance_d = 4.3;   // agujero pasante (holgura sobre tornillo de 5/32")
+outer_x = board_x + 2 * clearance_corte; // Nuevo ancho reducido
+outer_y = board_y + 2 * clearance_corte; // Nuevo alto reducido
+offset_x = clearance_corte; 
+offset_y = clearance_corte;
+
+// ---------- OREJITAS DE SUJECION TAPA-BASE (REUBICADAS) ----------
+ear_clearance_d = 4.3;   // agujero pasante para tornillo
 ear_d = 14;               // diametro de la orejita
-ear_reach = 3;             // igual que en tapa_V1.scad
+ear_reach = 3;            // distancia de extensión desde la esquina
 
+// Los centros ahora se calculan dinámicamente con las nuevas outer_x y outer_y recortadas
 ear_centers = [
     [-ear_reach, -ear_reach],
     [outer_x + ear_reach, -ear_reach],
@@ -131,13 +121,12 @@ module orejitas_plate() {
     for (p = ear_centers) orejita_plate(p);
 }
 
-// Plato inferior: plancha plana con las torretas de montaje del PCB.
-// Sin LEDs (ver punto a) del encabezado) y sin paredes (las paredes
-// estan en tapa_V1.scad).
-module base_v1() {
+// Plato inferior recortado con orejitas en su nueva posición
+module base_v1_recortada() {
     union() {
         cube([outer_x, outer_y, floor_thickness]);
-        // Torretas de montaje, en coordenadas reales de H1-H4
+        
+        // Torretas de montaje
         for (p = mount_holes) {
             translate([p[0] + offset_x, p[1] + offset_y, floor_thickness])
                 mounting_boss(floor_to_board);
@@ -145,5 +134,6 @@ module base_v1() {
     }
 }
 
-base_v1();
+// Ejecución del diseño corregido
+base_v1_recortada();
 orejitas_plate();
